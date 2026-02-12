@@ -5,7 +5,7 @@ const FaceEnrollmentStudio = ({ onCaptureComplete, isScanning }) => {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const [modelsLoaded, setModelsLoaded] = useState(false);
-    const [feedback, setFeedback] = useState("Initializing...");
+    const [feedback, setFeedback] = useState("Initializing AI...");
 
     // UI State
     const [progressState, setProgressState] = useState({
@@ -37,7 +37,6 @@ const FaceEnrollmentStudio = ({ onCaptureComplete, isScanning }) => {
         const loadModels = async () => {
             const MODEL_URL = '/models';
             try {
-                console.log("Loading FaceAPI models...");
                 await Promise.all([
                     faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
                     faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
@@ -45,12 +44,12 @@ const FaceEnrollmentStudio = ({ onCaptureComplete, isScanning }) => {
                     faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
                 ]);
                 if (isMounted) {
-                    console.log("Models loaded successfully");
                     setModelsLoaded(true);
+                    setFeedback("System Ready");
                 }
             } catch (err) {
                 console.error("Failed to load models:", err);
-                if (isMounted) setFeedback("Error loading AI models. Check console.");
+                if (isMounted) setFeedback("Engine Error");
             }
         };
         loadModels();
@@ -60,7 +59,7 @@ const FaceEnrollmentStudio = ({ onCaptureComplete, isScanning }) => {
     // Start/Stop Video based on isScanning prop
     useEffect(() => {
         if (isScanning && modelsLoaded) {
-            setFeedback("Position your face in the frame");
+            setFeedback("Position your face");
             startVideo();
         } else {
             stopVideo();
@@ -68,7 +67,7 @@ const FaceEnrollmentStudio = ({ onCaptureComplete, isScanning }) => {
     }, [isScanning, modelsLoaded]);
 
     const startVideo = () => {
-        navigator.mediaDevices.getUserMedia({ video: {} })
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
             .then(stream => {
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
@@ -76,7 +75,7 @@ const FaceEnrollmentStudio = ({ onCaptureComplete, isScanning }) => {
             })
             .catch(err => {
                 console.error("Camera Error:", err);
-                setFeedback("Camera access denied or unavailable");
+                setFeedback("Camera Unavailable");
             });
     };
 
@@ -92,33 +91,18 @@ const FaceEnrollmentStudio = ({ onCaptureComplete, isScanning }) => {
             if (!videoRef.current || !canvasRef.current || !scanningRef.current) return;
             if (videoRef.current.paused || videoRef.current.ended) return;
 
-            // Use videoWidth/videoHeight for intrinsic resolution
             const videoWidth = videoRef.current.videoWidth;
             const videoHeight = videoRef.current.videoHeight;
-
             if (videoWidth === 0 || videoHeight === 0) return;
 
             const displaySize = { width: videoWidth, height: videoHeight };
-
-            // Match canvas to video dimensions
-            // NOTE: We need to ensure the canvas IS the same size visually as the video
-            // If the video is styled with CSS (w-full h-full), the internal resolution 
-            // of the canvas must match the video stream resolution.
             faceapi.matchDimensions(canvasRef.current, displaySize);
 
             try {
-                // Update feedback only if "Scanning" to avoid flickering
-                // setFeedback("Scanning..."); 
-
                 const detections = await faceapi.detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
                     .withFaceLandmarks()
                     .withFaceExpressions()
                     .withFaceDescriptors();
-
-                // Debug log
-                // if (detections.length > 0) console.log("Face Detected:", detections[0].detection.score);
-
-                const resizedDetections = faceapi.resizeResults(detections, displaySize);
 
                 const ctx = canvasRef.current.getContext('2d');
                 ctx.clearRect(0, 0, displaySize.width, displaySize.height);
@@ -129,29 +113,20 @@ const FaceEnrollmentStudio = ({ onCaptureComplete, isScanning }) => {
                     const expressions = detection.expressions;
                     const descriptor = detection.descriptor;
 
-                    // Simple Pose Estimation (Yaw)
+                    // Simple Pose Estimation
                     const nose = landmarks.getNose()[0];
-                    const leftEye = landmarks.getLeftEye()[0];
-                    const rightEye = landmarks.getRightEye()[0];
                     const jaw = landmarks.getJawOutline();
                     const leftJaw = jaw[0];
                     const rightJaw = jaw[16];
-
-                    // Calculate ratios to estimate turn
                     const distToLeft = Math.abs(nose.x - leftJaw.x);
                     const distToRight = Math.abs(nose.x - rightJaw.x);
                     const ratio = distToLeft / (distToRight + 0.01);
 
                     let pose = 'Front';
-                    if (ratio < 0.6) pose = 'Right'; // Looking right (from camera perspective looks like left cheek hidden)
-                    if (ratio > 1.4) pose = 'Left';
+                    if (ratio < 0.65) pose = 'Right';
+                    if (ratio > 1.35) pose = 'Left';
 
-                    // Draw Box
-                    const box = resizedDetections[0].detection.box;
-                    const drawBox = new faceapi.draw.DrawBox(box, { label: pose });
-                    drawBox.draw(canvasRef.current);
-
-                    // Check Criteria using Refs (Current State)
+                    // Check Criteria
                     const currentProgress = progressRef.current;
                     let captured = false;
                     let newProgress = { ...currentProgress };
@@ -160,39 +135,37 @@ const FaceEnrollmentStudio = ({ onCaptureComplete, isScanning }) => {
                         if (pose === 'Front' && !currentProgress.front) { newProgress.front = true; captured = true; }
                         if (pose === 'Left' && !currentProgress.left) { newProgress.left = true; captured = true; }
                         if (pose === 'Right' && !currentProgress.right) { newProgress.right = true; captured = true; }
-
-                        // Lower threshold for expressions to make it easier
                         if (expressions.happy > 0.5 && !currentProgress.smile) { newProgress.smile = true; captured = true; }
                         if (expressions.neutral > 0.5 && !currentProgress.neutral) { newProgress.neutral = true; captured = true; }
                     }
 
                     if (captured) {
-                        // Update Logic Refs
                         progressRef.current = newProgress;
                         capturesRef.current.push(descriptor);
-
-                        // Update UI State separately
                         setProgressState(newProgress);
+                        setFeedback(`Success: ${pose}`);
 
-                        // Visual feedback
-                        setFeedback(`Captured: ${pose} / ${expressions.happy > 0.5 ? 'Smile' : 'Neutral'}`);
-
-                        // Check Completion
-                        if (newProgress.front && newProgress.left && newProgress.right && newProgress.smile) {
+                        if (newProgress.front && newProgress.left && newProgress.right && newProgress.smile && newProgress.neutral) {
                             if (scanningRef.current) {
-                                scanningRef.current = false; // Stop further captures
-                                setFeedback("Enrollment Complete!");
+                                scanningRef.current = false;
+                                setFeedback("Complete!");
                                 if (onCaptureComplete) {
-                                    setTimeout(() => {
-                                        onCaptureComplete(capturesRef.current);
-                                    }, 1000);
+                                    setTimeout(() => onCaptureComplete(capturesRef.current), 800);
                                 }
                             }
                         }
+                    } else {
+                        // Dynamic Instructions based on what's missing
+                        if (!currentProgress.front) setFeedback("Look Front");
+                        else if (!currentProgress.left) setFeedback("Turn Left");
+                        else if (!currentProgress.right) setFeedback("Turn Right");
+                        else if (!currentProgress.smile) setFeedback("Smile Please");
+                        else if (!currentProgress.neutral) setFeedback("Look Neutral");
                     }
-
+                } else if (detections.length === 0) {
+                    setFeedback("Face not found");
                 } else {
-                    setFeedback(detections.length === 0 ? "No face detected" : "Multiple faces detected");
+                    setFeedback("Multiple faces!");
                 }
             } catch (error) {
                 console.error("Detection Error:", error);
@@ -203,61 +176,58 @@ const FaceEnrollmentStudio = ({ onCaptureComplete, isScanning }) => {
     };
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center h-full">
-            <h3 className="text-xl font-bold mb-2">Face Enrollment Studio</h3>
-            <p className="text-gray-500 mb-6 text-sm">Position your face within the frame to begin.</p>
-
-            <div className="relative w-full max-w-md aspect-square bg-gray-900 rounded-2xl overflow-hidden shadow-inner border-4 border-gray-100 flex items-center justify-center">
-                {!isScanning && (
-                    <div className="text-center p-6 text-gray-400">
-                        <div className="text-4xl mb-2">📷</div>
-                        <p>Complete academic details to enable camera</p>
-                    </div>
-                )}
-
+        <div className="w-full flex flex-col items-center">
+            {/* Camera Area - No overlapping instructions here */}
+            <div className="relative w-full aspect-video bg-slate-900 rounded-2xl overflow-hidden border border-slate-100 flex items-center justify-center group">
                 <video
                     ref={videoRef}
                     autoPlay
                     muted
                     playsInline
                     onPlay={handleVideoPlay}
-                    className={`absolute inset-0 w-full h-full object-contain transform scale-x-[-1] ${!isScanning ? 'hidden' : ''}`}
+                    className={`absolute inset-0 w-full h-full object-cover transform scale-x-[-1] transition-opacity duration-300 ${!isScanning ? 'opacity-0' : 'opacity-100'}`}
                 />
-                <canvas ref={canvasRef} className={`absolute inset-0 w-full h-full object-contain transform scale-x-[-1] ${!isScanning ? 'hidden' : ''}`} />
+                <canvas ref={canvasRef} className={`absolute inset-0 w-full h-full object-cover transform scale-x-[-1] transition-opacity duration-300 ${!isScanning ? 'opacity-0' : 'opacity-100'}`} />
 
-                {/* Overlay UI */}
+                {/* Visual Guide Box */}
                 {isScanning && (
-                    <div className="absolute top-4 left-0 right-0 text-center">
-                        <span className="bg-black/50 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                            {feedback}
-                        </span>
+                    <div className="absolute inset-0 border-[40px] border-slate-900/40 pointer-events-none transition-all">
+                        <div className="w-full h-full border-2 border-dashed border-white/30 rounded-[20px]"></div>
                     </div>
                 )}
             </div>
 
-            {/* Progress Indicators */}
-            <div className="flex gap-6 mt-8 w-full justify-center">
-                <StatusItem label="Front" active={progressState.front} icon="✓" />
-                <StatusItem label="Left" active={progressState.left} icon="←" />
-                <StatusItem label="Right" active={progressState.right} icon="→" />
-                <StatusItem label="Smile" active={progressState.smile} icon="☺" />
-                <StatusItem label="Neutral" active={progressState.neutral} icon="😐" />
+            {/* Instruction Area - Dedicated space below video */}
+            <div className="w-full py-6 flex flex-col items-center">
+                <div className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300 ${isScanning ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-110' : 'bg-slate-100 text-slate-400'}`}>
+                    {feedback}
+                </div>
+
+                {/* Progress Indicators - Modern horizontal bar style */}
+                <div className="flex gap-4 mt-6 w-full justify-center">
+                    <StatusItem label="Front" active={progressState.front} index={1} />
+                    <StatusItem label="Left" active={progressState.left} index={2} />
+                    <StatusItem label="Right" active={progressState.right} index={3} />
+                    <StatusItem label="Smile" active={progressState.smile} index={4} />
+                    <StatusItem label="Neutral" active={progressState.neutral} index={5} />
+                </div>
             </div>
 
-            <div className="mt-6 flex gap-2 text-xs text-gray-400 items-center">
-                <span>🔒</span> Your biometric data is encrypted end-to-end.
+            <div className="flex gap-2 text-[10px] text-slate-400 items-center font-bold uppercase tracking-tighter">
+                <span className="material-symbols-outlined text-xs">lock</span>
+                Institutional Biometric standards applied
             </div>
         </div>
     );
 };
 
-const StatusItem = ({ label, active, icon }) => (
+const StatusItem = ({ label, active, index }) => (
     <div className="flex flex-col items-center gap-2">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg border-2 transition-all
-            ${active ? 'bg-blue-500 border-blue-500 text-white' : 'bg-gray-50 border-gray-200 text-gray-300'}`}>
-            {icon}
+        <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black transition-all duration-500 border-2
+            ${active ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200 scale-110' : 'bg-white border-slate-100 text-slate-300 rotate-3'}`}>
+            {active ? <span className="material-symbols-outlined text-sm">check</span> : index}
         </div>
-        <span className={`text-xs font-medium ${active ? 'text-blue-600' : 'text-gray-400'}`}>{label}</span>
+        <span className={`text-[9px] font-black uppercase tracking-tighter ${active ? 'text-emerald-600' : 'text-slate-400'}`}>{label}</span>
     </div>
 );
 

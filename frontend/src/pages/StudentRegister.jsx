@@ -92,8 +92,8 @@ const StudentRegister = () => {
                                 key={section.id}
                                 onClick={() => scrollToSection(section.id)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all ${activeSection === section.id
-                                        ? 'sidebar-item-active text-primary'
-                                        : 'text-slate-600 hover:bg-slate-50'
+                                    ? 'sidebar-item-active text-primary'
+                                    : 'text-slate-600 hover:bg-slate-50'
                                     }`}
                             >
                                 <span className="material-symbols-outlined">{section.icon}</span>
@@ -263,17 +263,17 @@ const StudentRegister = () => {
                             <h3 className="text-2xl font-bold text-slate-900">Face Enrollment</h3>
                             <p className="text-slate-500 mt-1">Complete biometric capture for automated attendance. Ensure you are in a well-lit area without glasses or headwear.</p>
                         </div>
-                        <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-8">
+                        <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-8 relative overflow-hidden">
                             {/* Camera Feed Container */}
                             <div className="flex-1 space-y-4">
-                                <div className="camera-feed aspect-video rounded-3xl relative overflow-hidden flex items-center justify-center border border-slate-100">
+                                <div className="relative rounded-2xl overflow-hidden">
                                     <FaceEnrollmentStudio
                                         isScanning={isScanning}
                                         onCaptureComplete={handleFaceCaptureComplete}
                                     />
 
                                     {!isScanning && faceDescriptors.length === 0 && (
-                                        <div className="absolute inset-0 z-10 bg-slate-900/10 backdrop-blur-[2px] flex items-center justify-center p-6 text-center">
+                                        <div className="absolute inset-0 z-10 bg-slate-900/10 backdrop-blur-[2px] flex flex-col items-center justify-center p-6 text-center rounded-2xl">
                                             <div className="bg-white/95 p-6 rounded-3xl shadow-2xl border border-white">
                                                 <span className="material-symbols-outlined text-4xl text-primary mb-3">photo_camera</span>
                                                 <h4 className="font-bold text-slate-900 mb-2 text-sm">Action Required</h4>
@@ -282,13 +282,11 @@ const StudentRegister = () => {
                                         </div>
                                     )}
 
-                                    {/* Success Indicators */}
+                                    {/* Success Indicators - Refined Positioning */}
                                     {faceDescriptors.length > 0 && !isScanning && (
-                                        <div className="absolute bottom-4 left-4 right-4 flex justify-between z-20">
-                                            <div className="flex gap-2">
-                                                <div className="bg-emerald-500/90 backdrop-blur px-3 py-1.5 rounded-xl text-[10px] text-white font-bold flex items-center gap-1.5 shadow-lg">
-                                                    <span className="material-symbols-outlined text-xs">check_circle</span> FACE CAPTURED
-                                                </div>
+                                        <div className="absolute top-4 right-4 z-20">
+                                            <div className="bg-emerald-500 text-white px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-emerald-500/20 border border-emerald-400">
+                                                <span className="material-symbols-outlined text-base">verified</span> FACE CAPTURED
                                             </div>
                                         </div>
                                     )}
@@ -299,7 +297,7 @@ const StudentRegister = () => {
                                     className="w-full bg-primary hover:bg-primary/90 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group"
                                 >
                                     <span className="material-symbols-outlined group-hover:scale-110 transition-transform">photo_camera</span>
-                                    {isScanning ? 'Capturing Face Data...' : faceDescriptors.length > 0 ? 'Restart Capture Sequence' : 'Start Capture Sequence'}
+                                    {isScanning ? 'Capturing Biometric Data...' : faceDescriptors.length > 0 ? 'Retry Capture Sequence' : 'Start Capture Sequence'}
                                 </button>
                             </div>
                             {/* Pose Guides Sidebar */}

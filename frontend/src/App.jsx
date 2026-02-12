@@ -1,14 +1,17 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
-import RegisterUser from './pages/RegisterUser';
 import StudentRegister from './pages/StudentRegister';
 
 const PrivateRoute = ({ children }) => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   return user ? children : <Navigate to="/login" />;
@@ -57,7 +60,6 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<RegisterUser />} />
           <Route path="/register-student" element={<StudentRegister />} />
           <Route path="/dashboard" element={
             <PrivateRoute>

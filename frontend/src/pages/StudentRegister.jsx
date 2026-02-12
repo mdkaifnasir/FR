@@ -23,6 +23,7 @@ const StudentRegister = () => {
         consent_given: false
     });
     const [faceDescriptors, setFaceDescriptors] = useState([]);
+    const [capturedImage, setCapturedImage] = useState(null);
     const [activeSection, setActiveSection] = useState('basic-identity');
     const [progress, setProgress] = useState(0);
 
@@ -54,8 +55,9 @@ const StudentRegister = () => {
         setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     };
 
-    const handleFaceCaptureComplete = (descriptors) => {
+    const handleFaceCaptureComplete = ({ descriptors, image }) => {
         setFaceDescriptors(descriptors);
+        setCapturedImage(image);
         setIsScanning(false);
     };
 
@@ -77,7 +79,8 @@ const StudentRegister = () => {
                         name: formData.name,
                         student_id: formData.student_id,
                         department: formData.department,
-                        academic_year: formData.academic_year
+                        academic_year: formData.academic_year,
+                        profile_image: capturedImage
                     }
                 }
             });

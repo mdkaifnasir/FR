@@ -25,6 +25,7 @@ const FaceEnrollmentStudio = ({ onCaptureComplete, isScanning }) => {
         neutral: false
     });
     const capturesRef = useRef([]);
+    const frontImageRef = useRef(null);
     const scanningRef = useRef(false);
 
     // Sync scanning prop to ref
@@ -142,6 +143,20 @@ const FaceEnrollmentStudio = ({ onCaptureComplete, isScanning }) => {
                     if (captured) {
                         progressRef.current = newProgress;
                         capturesRef.current.push(descriptor);
+
+                        // Capture front image for profile display
+                        if (pose === 'Front' && !frontImageRef.current) {
+                            const tempCanvas = document.createElement('canvas');
+                            tempCanvas.width = videoRef.current.videoWidth;
+                            tempCanvas.height = videoRef.current.videoHeight;
+                            const tCtx = tempCanvas.getContext('2d');
+                            // Drawing the video directly (mirrored as it appears in UI)
+                            tCtx.translate(tempCanvas.width, 0);
+                            tCtx.scale(-1, 1);
+                            tCtx.drawImage(videoRef.current, 0, 0);
+                            frontImageRef.current = tempCanvas.toDataURL('image/jpeg', 0.8);
+                        }
+
                         setProgressState(newProgress);
                         setFeedback(`Success: ${pose}`);
 
@@ -150,7 +165,10 @@ const FaceEnrollmentStudio = ({ onCaptureComplete, isScanning }) => {
                                 scanningRef.current = false;
                                 setFeedback("Complete!");
                                 if (onCaptureComplete) {
-                                    setTimeout(() => onCaptureComplete(capturesRef.current), 800);
+                                    setTimeout(() => onCaptureComplete({
+                                        descriptors: capturesRef.current,
+                                        image: frontImageRef.current
+                                    }), 800);
                                 }
                             }
                         }

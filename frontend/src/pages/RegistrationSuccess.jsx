@@ -39,12 +39,16 @@ const RegistrationSuccess = () => {
                         <div className="flex flex-col md:flex-row items-center gap-8">
                             {/* Profile Placeholder */}
                             <div className="relative">
-                                <div className="w-32 h-32 rounded-2xl bg-slate-100 overflow-hidden border-2 border-slate-100">
-                                    <img
-                                        alt="Student Portrait"
-                                        className="w-full h-full object-cover"
-                                        src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=facearea&facepad=2&w=300&h=300&q=80"
-                                    />
+                                <div className="w-32 h-32 rounded-2xl bg-slate-100 overflow-hidden border-2 border-slate-100 flex items-center justify-center">
+                                    {studentData.profile_image ? (
+                                        <img
+                                            alt="Student Portrait"
+                                            className="w-full h-full object-cover"
+                                            src={studentData.profile_image}
+                                        />
+                                    ) : (
+                                        <span className="material-symbols-outlined text-4xl text-slate-300">person</span>
+                                    )}
                                 </div>
                                 <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white rounded-full p-1.5 border-4 border-white shadow-lg shadow-emerald-200">
                                     <span className="material-symbols-outlined text-sm font-bold">verified_user</span>

@@ -7,8 +7,18 @@ const StudentRegister = () => {
     const navigate = useNavigate();
     const [isScanning, setIsScanning] = useState(false);
     const [formData, setFormData] = useState({
-        name: '', student_id: '', email: '', mobile: '', gender: '', dob: '',
-        faculty: '', degree: '', year: '', semester: '',
+        name: '',
+        student_id: '',
+        email: '',
+        mobile: '',
+        gender: '',
+        dob: '',
+        college: '',
+        department: '',
+        course: '',
+        semester: '',
+        division: '',
+        academic_year: '',
         consent_given: false
     });
     const [faceDescriptors, setFaceDescriptors] = useState([]);
@@ -25,16 +35,18 @@ const StudentRegister = () => {
     ];
 
     useEffect(() => {
-        const identityFields = ['name', 'student_id', 'email', 'gender', 'dob'];
-        const academicFields = ['faculty', 'degree', 'year', 'semester'];
+        const requiredFields = ['name', 'student_id', 'email', 'mobile', 'gender', 'dob', 'college', 'department', 'course', 'semester', 'division', 'academic_year'];
 
-        let completed = 0;
-        if (identityFields.every(f => formData[f])) completed++;
-        if (academicFields.every(f => formData[f])) completed++;
-        if (faceDescriptors.length > 0) completed++;
-        if (formData.consent_given) completed++;
+        const completedCount = requiredFields.filter(f => formData[f]).length;
+        const faceComplete = faceDescriptors.length > 0 ? 1 : 0;
+        const consentComplete = formData.consent_given ? 1 : 0;
 
-        setProgress((completed / 4) * 100);
+        // weighting: form (60%), face (30%), consent (10%)
+        const formProgress = (completedCount / requiredFields.length) * 60;
+        const faceProgress = faceComplete * 30;
+        const consentProgress = consentComplete * 10;
+
+        setProgress(formProgress + faceProgress + consentProgress);
     }, [formData, faceDescriptors]);
 
     const handleChange = (e) => {
@@ -54,13 +66,22 @@ const StudentRegister = () => {
         try {
             const payload = {
                 ...formData,
-                face_descriptor: Array.from(faceDescriptors[0])
+                face_descriptor: faceDescriptors[0] // Sending the first descriptor (array of floats)
             };
             await api.post('/students', payload);
             alert("Registration Successful!");
             navigate('/login');
         } catch (error) {
-            alert("Registration Failed: " + (error.response?.data?.message || error.message));
+            console.error("Submission Error:", error.response?.data);
+            const errorMsg = error.response?.data?.message || error.message;
+            const validationErrors = error.response?.data?.errors;
+
+            if (validationErrors) {
+                const detailedErrors = Object.values(validationErrors).flat().join('\n');
+                alert(`Registration Failed:\n${detailedErrors}`);
+            } else {
+                alert(`Registration Failed: ${errorMsg}`);
+            }
         }
     };
 
@@ -83,7 +104,7 @@ const StudentRegister = () => {
                         </div>
                         <div>
                             <h1 className="text-lg font-bold leading-none text-slate-900">EduGate</h1>
-                            <p className="text-xs text-slate-500 font-medium">Registration Portal v2.4</p>
+                            <p className="text-xs text-slate-500 font-medium">Registration Portal v2.5</p>
                         </div>
                     </div>
                     <nav className="space-y-1">
@@ -108,7 +129,7 @@ const StudentRegister = () => {
                         <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                             <div className="bg-primary h-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
                         </div>
-                        <p className="text-xs mt-2 text-slate-500">{Math.round((progress / 100) * 4)} of 4 sections completed</p>
+                        <p className="text-xs mt-2 text-slate-500">{Math.round(progress)}% of total requirements</p>
                     </div>
                 </div>
             </aside>
@@ -119,9 +140,9 @@ const StudentRegister = () => {
                     <h2 className="text-xl font-bold tracking-tight text-slate-800">Student Registration</h2>
                     <div className="flex items-center gap-4">
                         <span className="text-xs font-semibold px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-100">Draft Autosaved</span>
-                        <button className="text-slate-500 hover:text-primary transition-colors">
-                            <span className="material-symbols-outlined">help_outline</span>
-                        </button>
+                        <Link to="/login" className="text-slate-500 hover:text-primary transition-colors flex items-center gap-1 text-sm font-bold">
+                            <span className="material-symbols-outlined text-base">login</span> Login
+                        </Link>
                     </div>
                 </header>
 
@@ -130,7 +151,7 @@ const StudentRegister = () => {
                     <section id="basic-identity" className="scroll-mt-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="mb-6">
                             <h3 className="text-2xl font-bold text-slate-900">Basic Identity</h3>
-                            <p className="text-slate-500 mt-1">Provide your legal identification details as they appear on your passport or ID card.</p>
+                            <p className="text-slate-500 mt-1">Provide your legal identification details as they appear on your institutional records.</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-8 rounded-3xl border border-slate-100 shadow-sm transition-all hover:shadow-md">
                             <div className="space-y-2 col-span-2">
@@ -145,7 +166,7 @@ const StudentRegister = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700">Student ID Number</label>
+                                <label className="text-sm font-semibold text-slate-700">Student ID / Roll No</label>
                                 <input
                                     name="student_id"
                                     value={formData.student_id}
@@ -153,6 +174,28 @@ const StudentRegister = () => {
                                     className="w-full px-4 py-4 rounded-2xl border-slate-100 bg-slate-50 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none"
                                     placeholder="STU-2024-001"
                                     type="text"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-slate-700">Contact Email</label>
+                                <input
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-4 rounded-2xl border-slate-100 bg-slate-50 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none"
+                                    placeholder="j.doe@university.edu"
+                                    type="email"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-slate-700">Mobile Number</label>
+                                <input
+                                    name="mobile"
+                                    value={formData.mobile}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-4 rounded-2xl border-slate-100 bg-slate-50 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none"
+                                    placeholder="+91 9876543210"
+                                    type="tel"
                                 />
                             </div>
                             <div className="space-y-2">
@@ -171,24 +214,13 @@ const StudentRegister = () => {
                                     name="gender"
                                     value={formData.gender}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-4 rounded-2xl border-slate-100 bg-slate-50 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none"
+                                    className="w-full px-4 py-4 rounded-2xl border-slate-100 bg-slate-50 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none font-medium"
                                 >
                                     <option value="">Select Gender</option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
                                     <option value="Other">Other</option>
                                 </select>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700">Contact Email</label>
-                                <input
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-4 rounded-2xl border-slate-100 bg-slate-50 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none"
-                                    placeholder="j.doe@university.edu"
-                                    type="email"
-                                />
                             </div>
                         </div>
                     </section>
@@ -197,29 +229,43 @@ const StudentRegister = () => {
                     <section id="academic-info" className="scroll-mt-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="mb-6">
                             <h3 className="text-2xl font-bold text-slate-900">Academic Information</h3>
-                            <p className="text-slate-500 mt-1">Specify your current enrollment details within the university.</p>
+                            <p className="text-slate-500 mt-1">Specify your current enrollment details within the institution.</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-8 rounded-3xl border border-slate-100 shadow-sm transition-all hover:shadow-md">
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700">Faculty / Department</label>
+                            <div className="space-y-2 col-span-2">
+                                <label className="text-sm font-semibold text-slate-700">Institutional College</label>
                                 <select
-                                    name="faculty"
-                                    value={formData.faculty}
+                                    name="college"
+                                    value={formData.college}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-4 rounded-2xl border-slate-100 bg-slate-50 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none"
+                                    className="w-full px-4 py-4 rounded-2xl border-slate-100 bg-slate-50 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none font-medium"
                                 >
-                                    <option value="">Select Faculty</option>
-                                    <option value="Engineering">Engineering & Technology</option>
-                                    <option value="Business">Business School</option>
-                                    <option value="Arts">Faculty of Arts</option>
-                                    <option value="Medicine">Medical Sciences</option>
+                                    <option value="">Select College</option>
+                                    <option value="Abeda Inamdar Senior College">Abeda Inamdar Senior College</option>
+                                    <option value="Dr. P.A. Inamdar University">Dr. P.A. Inamdar University</option>
+                                    <option value="M.C.E. Society Arts & Commerce">M.C.E. Society Arts & Commerce</option>
                                 </select>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700">Degree Program</label>
+                                <label className="text-sm font-semibold text-slate-700">Department / Faculty</label>
+                                <select
+                                    name="department"
+                                    value={formData.department}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-4 rounded-2xl border-slate-100 bg-slate-50 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none font-medium"
+                                >
+                                    <option value="">Select Department</option>
+                                    <option value="Computer Science">Computer Science</option>
+                                    <option value="Information Technology">Information Technology</option>
+                                    <option value="Arts">General Arts</option>
+                                    <option value="Commerce">Commerce & Management</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-slate-700">Course / Degree</label>
                                 <input
-                                    name="degree"
-                                    value={formData.degree}
+                                    name="course"
+                                    value={formData.course}
                                     onChange={handleChange}
                                     className="w-full px-4 py-4 rounded-2xl border-slate-100 bg-slate-50 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none"
                                     placeholder="B.Sc. Computer Science"
@@ -227,32 +273,45 @@ const StudentRegister = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700">Year of Study</label>
+                                <label className="text-sm font-semibold text-slate-700">Academic Year</label>
                                 <select
-                                    name="year"
-                                    value={formData.year}
+                                    name="academic_year"
+                                    value={formData.academic_year}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-4 rounded-2xl border-slate-100 bg-slate-50 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none"
+                                    className="w-full px-4 py-4 rounded-2xl border-slate-100 bg-slate-50 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none font-medium"
                                 >
                                     <option value="">Select Year</option>
-                                    <option value="Year 1">Year 1</option>
-                                    <option value="Year 2">Year 2</option>
-                                    <option value="Year 3">Year 3</option>
-                                    <option value="Year 4">Year 4</option>
+                                    <option value="2023-2024">2023-2024</option>
+                                    <option value="2024-2025">2024-2025</option>
                                 </select>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700">Current Semester</label>
+                                <label className="text-sm font-semibold text-slate-700">Semester</label>
                                 <select
                                     name="semester"
                                     value={formData.semester}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-4 rounded-2xl border-slate-100 bg-slate-50 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none"
+                                    className="w-full px-4 py-4 rounded-2xl border-slate-100 bg-slate-50 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none font-medium"
                                 >
                                     <option value="">Select Semester</option>
                                     <option value="Semester 1">Semester 1</option>
                                     <option value="Semester 2">Semester 2</option>
+                                    <option value="Semester 3">Semester 3</option>
+                                    <option value="Semester 4">Semester 4</option>
+                                    <option value="Semester 5">Semester 5</option>
+                                    <option value="Semester 6">Semester 6</option>
                                 </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-slate-700">Division / Section</label>
+                                <input
+                                    name="division"
+                                    value={formData.division}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-4 rounded-2xl border-slate-100 bg-slate-50 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none"
+                                    placeholder="e.g. A, B, or C"
+                                    type="text"
+                                />
                             </div>
                         </div>
                     </section>

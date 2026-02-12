@@ -15,6 +15,7 @@ class Student extends Model
         'student_id',
         'face_descriptor',
         'email',
+        'password',
         'mobile',
         'gender',
         'dob',
@@ -25,6 +26,10 @@ class Student extends Model
         'division',
         'academic_year',
         'consent_given'
+    ];
+
+    protected $hidden = [
+        'password',
     ];
 
     protected $casts = [

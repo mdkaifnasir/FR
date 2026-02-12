@@ -1,13 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-    --primary: #137fec;
+@theme {
+    --color-primary: #137fec;
+    --color-background-light: #f6f7f8;
+    --color-background-dark: #101922;
+
+    --font-display: "Inter", "sans-serif";
+
+    --radius-DEFAULT: 0.25rem;
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.75rem;
+    --radius-full: 9999px;
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-display);
     @apply bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased;
 }
 
@@ -28,8 +35,8 @@ body {
 }
 
 .sidebar-item-active {
-    background-color: #137fec20;
-    border-right: 4px solid #137fec;
+    background-color: color-mix(in srgb, var(--color-primary) 12.5%, transparent);
+    border-right: 4px solid var(--color-primary);
 }
 
 .camera-feed {
@@ -49,10 +56,10 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #137fec30;
+    background: color-mix(in srgb, var(--color-primary) 20%, transparent);
     border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #137fec50;
+    background: color-mix(in srgb, var(--color-primary) 30%, transparent);
 }

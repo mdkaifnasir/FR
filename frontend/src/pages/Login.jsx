@@ -36,39 +36,42 @@ const Login = () => {
                 />
             </div>
 
-            <div className="w-full max-w-md">
+            <div className="w-full max-w-md relative z-10 transition-all duration-500 ease-in-out">
                 {/* Logo/Brand Section */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-primary mb-4 shadow-lg shadow-primary/20">
-                        <span className="material-icons text-white text-3xl">school</span>
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary mb-4 shadow-xl shadow-primary/30 group">
+                        <span className="material-symbols-outlined text-white text-4xl group-hover:scale-110 transition-transform">face_unlock</span>
                     </div>
-                    <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Academic Portal</h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1">Student Attendance & Registration System</p>
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">EduGate</h1>
+                    <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium">Student Attendance & Registration System</p>
                 </div>
 
                 {/* Login Card */}
-                <div className="bg-white dark:bg-slate-900 shadow-xl rounded-xl p-8 border border-slate-200/50 dark:border-slate-800">
-                    <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-6">Student Login</h2>
+                <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-2xl rounded-2xl p-10 border border-slate-200/50 dark:border-slate-800 transition-all hover:shadow-primary/5">
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-8 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary">login</span>
+                        Student Login
+                    </h2>
 
                     {error && (
-                        <div className="p-3 mb-6 text-sm text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg flex items-center">
-                            <span className="material-icons text-sm mr-2">error_outline</span>
+                        <div className="p-4 mb-8 text-sm text-red-700 bg-red-50 dark:bg-red-900/30 dark:text-red-400 border border-red-100 dark:border-red-900/50 rounded-xl flex items-center animate-shake">
+                            <span className="material-symbols-outlined text-base mr-3">error_outline</span>
                             {error}
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         {/* ID Field */}
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5" htmlFor="student-id">
+                        <div className="space-y-2">
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 ml-1" htmlFor="student-id">
                                 Student ID / Roll Number
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span className="material-icons text-slate-400 text-sm">badge</span>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <span className="material-symbols-outlined text-slate-400 text-lg group-focus-within:text-primary transition-colors">badge</span>
                                 </div>
                                 <input
-                                    className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    className="block w-full pl-12 pr-4 py-3.5 bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
                                     id="student-id"
                                     name="student-id"
                                     placeholder="e.g. STU-12345"
@@ -81,16 +84,16 @@ const Login = () => {
                         </div>
 
                         {/* Password Field */}
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5" htmlFor="password">
+                        <div className="space-y-2">
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 ml-1" htmlFor="password">
                                 Password
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span className="material-icons text-slate-400 text-sm">lock</span>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <span className="material-symbols-outlined text-slate-400 text-lg group-focus-within:text-primary transition-colors">lock</span>
                                 </div>
                                 <input
-                                    className="block w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    className="block w-full pl-12 pr-12 py-3.5 bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
                                     id="password"
                                     name="password"
                                     placeholder="••••••••"
@@ -100,39 +103,40 @@ const Login = () => {
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
                                 <button
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-primary transition-colors"
+                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-primary transition-colors"
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
                                 >
-                                    <span className="material-icons text-sm">{showPassword ? "visibility_off" : "visibility"}</span>
+                                    <span className="material-symbols-outlined text-lg">{showPassword ? "visibility_off" : "visibility"}</span>
                                 </button>
                             </div>
                         </div>
 
                         {/* Options Row */}
-                        <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center justify-between text-sm px-1">
                             <div className="flex items-center">
-                                <input className="h-4 w-4 text-primary focus:ring-primary border-slate-300 rounded cursor-pointer" id="remember-me" name="remember-me" type="checkbox" />
-                                <label className="ml-2 block text-slate-600 dark:text-slate-400 cursor-pointer" htmlFor="remember-me">
+                                <input className="h-4 w-4 text-primary focus:ring-primary border-slate-300 rounded-md cursor-pointer transition-all" id="remember-me" name="remember-me" type="checkbox" />
+                                <label className="ml-2.5 block text-slate-600 dark:text-slate-400 cursor-pointer font-medium" htmlFor="remember-me">
                                     Remember me
                                 </label>
                             </div>
-                            <a className="font-medium text-primary hover:text-primary/80 transition-colors" href="#">
+                            <a className="font-bold text-primary hover:text-primary/80 transition-colors" href="#">
                                 Forgot Password?
                             </a>
                         </div>
 
                         {/* Login Button */}
-                        <button className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all" type="submit">
+                        <button className="w-full flex justify-center items-center gap-2 py-4 px-6 border border-transparent rounded-xl shadow-xl text-md font-bold text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all group active:scale-95 shadow-primary/20" type="submit">
                             Login to Dashboard
+                            <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
                         </button>
                     </form>
 
                     {/* Footer Link */}
-                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
+                    <div className="mt-10 pt-8 border-t border-slate-100 dark:border-slate-800 text-center">
                         <p className="text-sm text-slate-500 dark:text-slate-400">
                             Not registered yet?
-                            <Link to="/register-student" className="ml-1 font-semibold text-primary hover:text-primary/80 transition-colors">
+                            <Link to="/register-student" className="ml-1.5 font-bold text-primary hover:text-primary/80 transition-colors">
                                 Register here
                             </Link>
                         </p>

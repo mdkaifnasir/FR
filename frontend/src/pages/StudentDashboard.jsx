@@ -3,145 +3,300 @@ import { useAuth } from '../context/AuthContext';
 
 const StudentDashboard = () => {
     const { user, logout } = useAuth();
+    const currentDate = new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
 
     return (
-        <div className="min-h-screen bg-background-light font-display p-4 md:p-8 relative overflow-hidden">
-            <div className="campus-pattern opacity-10"></div>
-            <div className="architectural-overlay"></div>
+        <div className="flex h-screen bg-[#F0F5FA] font-sans text-[#1A1C1E]">
+            {/* Sidebar */}
+            <aside className="w-64 bg-white border-r border-[#E1E6EB] flex flex-col shrink-0">
+                <div className="p-6 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-[#137FEC] rounded-xl flex items-center justify-center shadow-lg shadow-blue-100">
+                        <span className="material-symbols-outlined text-white text-2xl">face_unlock</span>
+                    </div>
+                    <span className="text-xl font-bold tracking-tight text-[#137FEC]">AttendFace</span>
+                </div>
 
-            <div className="max-w-6xl mx-auto relative z-10">
+                <nav className="mt-6 px-4 flex-1 space-y-1">
+                    <NavItem icon="dashboard" label="Dashboard" active />
+                    <NavItem icon="calendar_today" label="My Attendance" />
+                    <NavItem icon="person" label="Profile" />
+                    <NavItem icon="notifications" label="Notifications" />
+                    <NavItem icon="help" label="Help" />
+                </nav>
+
+                <div className="p-6 bg-[#F8FAFC] border-t border-[#E1E6EB]">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="User" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold truncate">{user?.name || 'Alex Johnson'}</p>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">ID: {user?.student_id || '2024CS082'}</p>
+                        </div>
+                        <button onClick={logout} className="text-slate-400 hover:text-red-500 transition-colors">
+                            <span className="material-symbols-outlined text-xl">logout</span>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className="flex-1 overflow-y-auto p-8 lg:p-10">
                 {/* Header */}
-                <header className="flex justify-between items-center mb-10 bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-white shadow-xl">
-                    <div className="flex items-center gap-4">
-                        <div className="bg-primary text-white p-3 rounded-2xl shadow-lg shadow-primary/20">
-                            <span className="material-symbols-outlined text-2xl">school</span>
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-bold text-slate-900 leading-none">Student Portal</h1>
-                            <p className="text-xs text-slate-500 font-bold mt-1.5 uppercase tracking-widest">Personal Dashboard</p>
-                        </div>
+                <header className="flex justify-between items-center mb-10">
+                    <div>
+                        <h1 className="text-3xl font-extrabold text-[#1A1C1E] tracking-tight">Welcome back, {user?.name?.split(' ')[0] || 'Alex'}!</h1>
+                        <p className="text-sm text-[#74777F] font-medium mt-1">Today is {currentDate}</p>
                     </div>
                     <div className="flex items-center gap-4">
-                        <div className="text-right hidden sm:block">
-                            <p className="text-sm font-black text-slate-900">{user?.name}</p>
-                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-tighter">Student Account</p>
-                        </div>
-                        <button onClick={logout} className="p-3 bg-slate-50 text-slate-600 rounded-2xl hover:text-red-500 hover:bg-red-50 transition-all border border-slate-100">
-                            <span className="material-symbols-outlined">logout</span>
+                        <button className="p-3 bg-white rounded-xl shadow-sm border border-[#E1E6EB] text-[#74777F] hover:bg-slate-50 transition-all">
+                            <span className="material-symbols-outlined text-xl">search</span>
+                        </button>
+                        <button className="flex items-center gap-2 px-6 py-3 bg-[#137FEC] text-white rounded-xl font-bold border-b-4 border-blue-700 shadow-xl shadow-blue-100 hover:translate-y-[1px] hover:border-b-2 active:translate-y-[4px] active:border-b-0 transition-all group">
+                            <span className="material-symbols-outlined text-lg group-hover:rotate-12 transition-transform">photo_camera</span>
+                            Quick Check-in
                         </button>
                     </div>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left Column: Profile Card */}
-                    <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-xl border border-white text-center">
-                            <div className="relative inline-block mb-6">
-                                <div className="w-32 h-32 rounded-3xl bg-slate-100 overflow-hidden border-4 border-slate-50 shadow-inner flex items-center justify-center mx-auto">
-                                    <span className="material-symbols-outlined text-6xl text-slate-300">account_circle</span>
-                                </div>
-                                <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white rounded-full p-2 border-4 border-white shadow-lg shadow-emerald-200">
-                                    <span className="material-symbols-outlined text-sm font-bold">verified</span>
-                                </div>
-                            </div>
-                            <h2 className="text-2xl font-bold text-slate-900 mb-1">{user?.name}</h2>
-                            <p className="text-slate-500 text-sm font-medium mb-6">ID: {user?.student_id}</p>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+                    <OverallAttendanceCard percentage={88} trend="+2.4% from last month" />
+                    <LastCheckInCard time="10:15 AM" location="Computer Science Lab - B3" />
+                    <TotalClassesCard attended={42} total={48} remaining={6} />
+                </div>
 
-                            <div className="space-y-3 pt-6 border-t border-slate-50">
-                                <ProfileDetail label="Email Address" value={user?.email} icon="mail" />
-                                <ProfileDetail label="User Role" value="Student" icon="badge" />
+                {/* Middle Section: Trends & Upcoming */}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    {/* Attendance Trends */}
+                    <div className="lg:col-span-3 bg-white p-8 rounded-[2.5rem] shadow-sm border border-[#E1E6EB]">
+                        <div className="flex justify-between items-center mb-8">
+                            <h3 className="text-xl font-bold">Monthly Attendance Trends</h3>
+                            <div className="relative">
+                                <select className="appearance-none bg-[#F8FAFC] border border-[#E1E6EB] rounded-2xl px-5 py-2.5 text-xs font-bold pr-10 outline-none">
+                                    <option>October 2023</option>
+                                    <option>September 2023</option>
+                                </select>
+                                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-lg text-slate-400 pointer-events-none">expand_more</span>
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-br from-primary to-blue-600 p-8 rounded-3xl shadow-xl text-white relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                                <span className="material-symbols-outlined text-8xl">qr_code_2</span>
-                            </div>
-                            <h3 className="text-lg font-black mb-2 flex items-center gap-2">
-                                <span className="material-symbols-outlined">identity_platform</span> Digital ID
-                            </h3>
-                            <p className="text-sm text-blue-50 font-medium mb-6">Your unique digital identity for smart attendance.</p>
-                            <button className="w-full py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2">
-                                <span className="material-symbols-outlined text-xl">qr_code_scanner</span>
-                                View QR Code
-                            </button>
+                        <div className="h-64 flex items-end justify-between px-4 mt-4 mb-2">
+                            <Bar day="Mon" height="75%" />
+                            <Bar day="Tue" height="55%" />
+                            <Bar day="Wed" height="90%" active />
+                            <Bar day="Thu" height="45%" />
+                            <Bar day="Fri" height="85%" />
+                            <Bar day="Sat" height="0%" />
+                            <Bar day="Sun" height="0%" />
                         </div>
                     </div>
 
-                    {/* Right Column: Main Content */}
-                    <div className="lg:col-span-2 space-y-8">
-                        {/* Welcome Card */}
-                        <div className="bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-xl border border-white relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
-                            <h2 className="text-3xl font-black text-slate-900 mb-2 relative">Welcome Back!</h2>
-                            <p className="text-slate-500 font-medium mb-8 relative">Track your attendance and academic progress seamlessly.</p>
-
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 relative">
-                                <StatBox label="Total Presence" value="84%" icon="check_circle" color="emerald" />
-                                <StatBox label="Upcoming Classes" value="4" icon="calendar_month" color="primary" />
-                                <StatBox label="Notifications" value="2 New" icon="notifications_active" color="amber" />
-                            </div>
+                    {/* Upcoming Classes */}
+                    <div className="lg:col-span-1 bg-white p-8 rounded-[2.5rem] shadow-sm border border-[#E1E6EB]">
+                        <div className="flex justify-between items-center mb-8">
+                            <h3 className="text-xl font-bold">Upcoming Classes</h3>
+                            <span className="px-3 py-1 bg-blue-50 text-[#137FEC] text-[10px] font-black rounded-lg uppercase">3 Today</span>
                         </div>
 
-                        {/* Recent Activity */}
-                        <div className="bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-xl border border-white">
-                            <div className="flex justify-between items-center mb-8">
-                                <h3 className="font-black text-slate-900 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-primary">history</span> Recent Attendance
-                                </h3>
-                                <button className="text-xs font-bold text-primary hover:underline uppercase tracking-widest">View Full History</button>
-                            </div>
-
-                            <div className="space-y-4">
-                                <AttendanceItem date="Today, Oct 12" time="09:15 AM" status="Present" success />
-                                <AttendanceItem date="Yesterday, Oct 11" time="10:30 AM" status="Present" success />
-                                <AttendanceItem date="Oct 10, 2023" time="11:45 AM" status="Excused" />
-                            </div>
+                        <div className="space-y-6">
+                            <ClassItem
+                                name="Data Structures"
+                                time="02:00 PM"
+                                room="Room 402"
+                                status="Face Check-in Ready"
+                                startTime="45m"
+                                color="emerald"
+                            />
+                            <ClassItem
+                                name="Software Engineering"
+                                time="04:00 PM"
+                                room="Online (Teams)"
+                                status="Scheduled"
+                                footer="Wait for class to start"
+                                color="slate"
+                            />
+                            <ClassItem
+                                name="Discrete Mathematics"
+                                time="Tomorrow"
+                                room="Room 102"
+                                status="Tomorrow"
+                                footer="09:00 AM"
+                                color="slate"
+                            />
                         </div>
                     </div>
                 </div>
-            </div>
+
+                {/* Bottom Section: Recent Activity Table */}
+                <div className="mt-10 bg-white p-8 rounded-[2.5rem] shadow-sm border border-[#E1E6EB]">
+                    <h3 className="text-xl font-bold mb-8">Recent Attendance Activity</h3>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="text-[#A1A5B7] text-[11px] font-bold uppercase tracking-widest border-b border-slate-50">
+                                <tr>
+                                    <th className="pb-4">Course Name</th>
+                                    <th className="pb-4">Date</th>
+                                    <th className="pb-4">Time</th>
+                                    <th className="pb-4">Verification</th>
+                                    <th className="pb-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                <ActivityRow
+                                    course="Artificial Intelligence"
+                                    date="Oct 20, 2023"
+                                    time="10:15 AM"
+                                    confidence="98.2%"
+                                    status="Present"
+                                />
+                                <ActivityRow
+                                    course="Cloud Computing"
+                                    date="Oct 19, 2023"
+                                    time="02:00 PM"
+                                    confidence="95.5%"
+                                    status="Present"
+                                />
+                                <ActivityRow
+                                    course="Network Security"
+                                    date="Oct 18, 2023"
+                                    time="09:00 AM"
+                                    confidence="99.1%"
+                                    status="Present"
+                                />
+                                <ActivityRow
+                                    course="Database Systems"
+                                    date="Oct 17, 2023"
+                                    time="11:30 AM"
+                                    confidence="97.8%"
+                                    status="Present"
+                                />
+                                <ActivityRow
+                                    course="Machine Learning"
+                                    date="Oct 16, 2023"
+                                    time="01:45 PM"
+                                    confidence="96.4%"
+                                    status="Present"
+                                />
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
         </div>
     );
 };
 
-const ProfileDetail = ({ label, value, icon }) => (
-    <div className="flex items-center gap-4 text-left p-3 rounded-2xl border border-transparent hover:border-slate-100 hover:bg-slate-50/50 transition-all">
-        <div className="p-2 bg-slate-50 rounded-xl text-slate-400">
-            <span className="material-symbols-outlined text-xl">{icon}</span>
+const NavItem = ({ icon, label, active }) => (
+    <a href="#" className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all group ${active ? 'bg-[#137FEC] text-white shadow-lg shadow-blue-100' : 'text-[#74777F] hover:bg-slate-50 hover:text-[#1A1C1E]'}`}>
+        <span className="material-symbols-outlined text-xl">{icon}</span>
+        {label}
+    </a>
+);
+
+const OverallAttendanceCard = ({ percentage, trend }) => (
+    <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-[#E1E6EB] flex items-center justify-between">
+        <div>
+            <p className="text-xs font-bold text-[#74777F] uppercase tracking-wider mb-2">Overall Attendance</p>
+            <h4 className="text-4xl font-black text-[#1A1C1E] mb-2">{percentage}%</h4>
+            <div className="flex items-center gap-1.5 text-emerald-500 font-bold text-[11px]">
+                <span className="material-symbols-outlined text-sm font-black">trending_up</span>
+                {trend}
+            </div>
         </div>
-        <div className="flex-1 min-w-0">
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest leading-none mb-1">{label}</p>
-            <p className="text-sm font-bold text-slate-700 truncate">{value}</p>
+        <div className="relative w-20 h-20">
+            <svg className="w-full h-full transform -rotate-90">
+                <circle cx="40" cy="40" r="32" stroke="#F1F4F9" strokeWidth="8" fill="transparent" />
+                <circle cx="40" cy="40" r="32" stroke="#137FEC" strokeWidth="8" fill="transparent" strokeDasharray={`${2 * Math.PI * 32}`} strokeDashoffset={`${2 * Math.PI * 32 * (1 - percentage / 100)}`} strokeLinecap="round" />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+                <span className="material-symbols-outlined text-[#137FEC] text-xl font-bold">done_all</span>
+            </div>
         </div>
     </div>
 );
 
-const StatBox = ({ label, value, icon, color }) => (
-    <div className={`bg-slate-50 p-6 rounded-3xl border border-slate-100 transition-all hover:bg-${color}-50/50 hover:border-${color}-100 group`}>
-        <div className={`inline-flex p-3 rounded-2xl bg-${color}-100 text-${color}-600 mb-4 group-hover:scale-110 transition-transform`}>
-            <span className="material-symbols-outlined">{icon}</span>
+const LastCheckInCard = ({ time, location }) => (
+    <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-[#E1E6EB]">
+        <p className="text-xs font-bold text-[#74777F] uppercase tracking-wider mb-2">Last Check-in Time</p>
+        <h4 className="text-4xl font-black text-[#1A1C1E] mb-4">{time}</h4>
+        <div className="flex items-center gap-2 mb-3">
+            <span className="material-symbols-outlined text-slate-400 text-lg">location_on</span>
+            <span className="text-[11px] font-bold text-slate-600">{location}</span>
         </div>
-        <h4 className="text-xl font-black text-slate-900 mb-1">{value}</h4>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{label}</p>
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-[10px] font-black uppercase tracking-widest">Face Verified</span>
+        </div>
     </div>
 );
 
-const AttendanceItem = ({ date, time, status, success }) => (
-    <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-50 hover:bg-slate-50/80 transition-all">
-        <div className="flex items-center gap-4">
-            <div className={`p-2.5 rounded-xl ${success ? 'bg-emerald-50 text-emerald-500' : 'bg-slate-100 text-slate-400'}`}>
-                <span className="material-symbols-outlined">{success ? 'verified' : 'history'}</span>
+const TotalClassesCard = ({ attended, total, remaining }) => {
+    const progress = (attended / total) * 100;
+    return (
+        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-[#E1E6EB]">
+            <p className="text-xs font-bold text-[#74777F] uppercase tracking-wider mb-2">Total Classes Attended</p>
+            <h4 className="text-4xl font-black text-[#1A1C1E] mb-4">{attended} <span className="text-slate-300">/ {total}</span></h4>
+            <div className="w-full h-2.5 bg-[#F1F4F9] rounded-full mb-3 overflow-hidden">
+                <div className="h-full bg-[#137FEC] rounded-full transition-all duration-1000" style={{ width: `${progress}%` }}></div>
             </div>
-            <div>
-                <p className="text-sm font-bold text-slate-800">{date}</p>
-                <p className="text-[11px] text-slate-500 font-medium">{time}</p>
-            </div>
+            <p className="text-[11px] font-bold text-slate-400 italic font-medium">{remaining} classes remaining this semester</p>
         </div>
-        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${success ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+    );
+};
+
+const Bar = ({ day, height, active }) => (
+    <div className="flex flex-col items-center gap-4 h-full group">
+        <div className="relative flex-1 w-12 md:w-16 bg-[#F1F4F9] rounded-2xl overflow-hidden flex flex-col justify-end transition-all group-hover:bg-slate-100/50">
+            <div
+                className={`w-full rounded-2xl transition-all duration-700 ${active ? 'bg-[#137FEC]' : 'bg-[#137FEC]/60'}`}
+                style={{ height }}
+            ></div>
+        </div>
+        <span className={`text-[11px] font-bold uppercase tracking-tight ${active ? 'text-[#1A1C1E]' : 'text-[#A1A5B7]'}`}>{day}</span>
+    </div>
+);
+
+const ClassItem = ({ name, time, room, status, startTime, footer, color }) => (
+    <div className="group cursor-pointer">
+        <div className="flex justify-between items-start mb-2">
+            <h5 className="text-sm font-black text-[#1A1C1E] group-hover:text-[#137FEC] transition-colors">{name}</h5>
+            {startTime && <span className="bg-amber-50 text-amber-600 text-[10px] font-black px-2 py-0.5 rounded">Starts in {startTime}</span>}
+        </div>
+        <div className="flex items-center gap-4 text-[11px] font-bold text-[#74777F] mb-3">
+            <div className="flex items-center gap-1.5"><span className="material-symbols-outlined text-base">schedule</span>{time}</div>
+            <div className="flex items-center gap-1.5"><span className="material-symbols-outlined text-base">door_front</span>{room}</div>
+        </div>
+        <button className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${color === 'emerald' ? 'bg-[#E7F7F0] text-[#00B26A] hover:bg-[#00B26A] hover:text-white' : 'bg-slate-50 text-slate-500 border border-slate-100 hover:bg-slate-100'}`}>
+            <span className="material-symbols-outlined text-lg">{status === 'Face Check-in Ready' ? 'camera' : status === 'Scheduled' ? 'event' : 'event_available'}</span>
             {status}
-        </span>
+        </button>
+        {footer && <p className="text-[10px] text-slate-400 italic text-center mt-2 group-hover:text-slate-500 transition-colors uppercase tracking-widest font-bold">{footer}</p>}
     </div>
+);
+
+const ActivityRow = ({ course, date, time, confidence, status }) => (
+    <tr className="group hover:bg-slate-50/50 transition-all">
+        <td className="py-5 text-sm font-bold text-[#1A1C1E]">{course}</td>
+        <td className="py-5 text-sm font-medium text-[#74777F]">{date}</td>
+        <td className="py-5 text-sm font-medium text-[#74777F]">{time}</td>
+        <td className="py-5">
+            <div className="flex items-center gap-2 text-emerald-500">
+                <span className="material-symbols-outlined text-base font-black">verified</span>
+                <span className="text-[11px] font-black">{confidence} Confidence</span>
+            </div>
+        </td>
+        <td className="py-5 text-right sm:text-left">
+            <span className="px-4 py-1.5 bg-[#E7F7F0] text-[#00B26A] text-[10px] font-black rounded-lg uppercase tracking-widest">
+                {status}
+            </span>
+        </td>
+    </tr>
 );
 
 export default StudentDashboard;

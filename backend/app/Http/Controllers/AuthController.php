@@ -95,14 +95,25 @@ class AuthController extends Controller
         $students = Student::all(); // In production, use a vector database or limited query
 
         $bestMatch = null;
-        $minDistance = 0.6; // Threshold for face-api.js
+        $minDistance = 0.45; // Stricter threshold for better security (standard is 0.6)
+
+        \Log::info("Face Login Attempt", [
+            'input_descriptor_length' => count($inputDescriptor)
+        ]);
 
         foreach ($students as $student) {
             $dbDescriptor = $student->face_descriptor;
-            if (!$dbDescriptor)
+            if (!$dbDescriptor || count($dbDescriptor) !== count($inputDescriptor)) {
                 continue;
+            }
 
             $distance = $this->euclideanDistance($inputDescriptor, $dbDescriptor);
+
+            \Log::info("Comparing face", [
+                'student_id' => $student->student_id,
+                'distance' => $distance
+            ]);
+
             if ($distance < $minDistance) {
                 $minDistance = $distance;
                 $bestMatch = $student;
@@ -110,6 +121,12 @@ class AuthController extends Controller
         }
 
         if ($bestMatch) {
+            \Log::info("Face Match Success", [
+                'student_id' => $bestMatch->student_id,
+                'final_distance' => $minDistance,
+                'threshold' => 0.45
+            ]);
+
             $token = $bestMatch->createToken('auth_token')->plainTextToken;
             return response()->json([
                 'access_token' => $token,

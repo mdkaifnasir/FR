@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext';
 
 const FaceLogin = () => {
     const videoRef = useRef(null);
-    const canvasRef = useRef(null);
     const [modelsLoaded, setModelsLoaded] = useState(false);
     const [feedback, setFeedback] = useState("Position your face");
     const [isScanning, setIsScanning] = useState(true);
@@ -55,7 +54,10 @@ const FaceLogin = () => {
 
     const handleVideoPlay = () => {
         const interval = setInterval(async () => {
-            if (!videoRef.current || !canvasRef.current || !isScanning) return;
+            if (!videoRef.current || !isScanning || !modelsLoaded) return;
+
+            // Wait for video metadata to be fully ready
+            if (videoRef.current.readyState !== 4) return;
 
             try {
                 const detection = await faceapi.detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
@@ -67,10 +69,12 @@ const FaceLogin = () => {
                     setFeedback("Face Captured! Verifying...");
 
                     try {
-                        await loginByFace(Array.from(detection.descriptor));
+                        const response = await loginByFace(Array.from(detection.descriptor));
                         navigate('/dashboard');
                     } catch (err) {
-                        setError("Face not recognized. Please try again or use password.");
+                        console.error("Login attempt failed:", err);
+                        const msg = err.response?.data?.message || "Face not recognized. Please try again or use password.";
+                        setError(msg);
                         setFeedback("Recognition Failed");
                         setTimeout(() => {
                             setIsScanning(true);

@@ -121,6 +121,19 @@ const Login = () => {
                             Login to Dashboard
                             <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
                         </button>
+
+                        {/* Divider */}
+                        <div className="relative flex items-center py-2">
+                            <div className="flex-grow border-t border-slate-100"></div>
+                            <span className="flex-shrink mx-4 text-xs font-bold text-slate-400 uppercase tracking-widest">OR</span>
+                            <div className="flex-grow border-t border-slate-100"></div>
+                        </div>
+
+                        {/* Face ID Login Button */}
+                        <Link to="/login-face" className="w-full flex justify-center items-center gap-2 py-4 px-6 border border-slate-100 rounded-2xl text-md font-bold text-slate-700 bg-white hover:bg-slate-50 transition-all group active:scale-95 shadow-sm">
+                            <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">face_unlock</span>
+                            Sign in with Face ID
+                        </Link>
                     </form>
 
                     {/* Footer Link */}

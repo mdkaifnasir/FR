@@ -85,6 +85,59 @@ class AuthController extends Controller
         ], 401);
     }
 
+    public function loginByFace(Request $request)
+    {
+        $request->validate([
+            'face_descriptor' => 'required|array',
+        ]);
+
+        $inputDescriptor = $request->input('face_descriptor');
+        $students = Student::all(); // In production, use a vector database or limited query
+
+        $bestMatch = null;
+        $minDistance = 0.6; // Threshold for face-api.js
+
+        foreach ($students as $student) {
+            $dbDescriptor = $student->face_descriptor;
+            if (!$dbDescriptor)
+                continue;
+
+            $distance = $this->euclideanDistance($inputDescriptor, $dbDescriptor);
+            if ($distance < $minDistance) {
+                $minDistance = $distance;
+                $bestMatch = $student;
+            }
+        }
+
+        if ($bestMatch) {
+            $token = $bestMatch->createToken('auth_token')->plainTextToken;
+            return response()->json([
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                'user' => [
+                    'id' => $bestMatch->id,
+                    'name' => $bestMatch->name,
+                    'email' => $bestMatch->email,
+                    'role' => 'student',
+                    'student_id' => $bestMatch->student_id
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Face not recognized'
+        ], 401);
+    }
+
+    private function euclideanDistance($a, $b)
+    {
+        $sum = 0;
+        for ($i = 0; $i < count($a); $i++) {
+            $sum += pow($a[$i] - $b[$i], 2);
+        }
+        return sqrt($sum);
+    }
+
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();

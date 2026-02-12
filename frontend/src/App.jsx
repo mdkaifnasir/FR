@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import StudentRegister from './pages/StudentRegister';
 import RegistrationSuccess from './pages/RegistrationSuccess';
+import FaceLogin from './pages/FaceLogin';
 
 const PrivateRoute = ({ children }) => {
   // ... same as before ...
@@ -103,6 +104,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/login-face" element={<FaceLogin />} />
           <Route path="/register-student" element={<StudentRegister />} />
           <Route path="/registration-success" element={<RegistrationSuccess />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />

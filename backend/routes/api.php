@@ -8,7 +8,6 @@ use App\Http\Controllers\AuthController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/login-face', [AuthController::class, 'loginByFace']);
 
 // Public registration for students
 Route::post('/students', [\App\Http\Controllers\StudentController::class, 'store']);

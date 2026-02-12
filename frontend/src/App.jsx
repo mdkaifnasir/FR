@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import StudentRegister from './pages/StudentRegister';
 import RegistrationSuccess from './pages/RegistrationSuccess';
-import FaceLogin from './pages/FaceLogin';
+import StudentDashboard from './pages/StudentDashboard';
 
 const PrivateRoute = ({ children }) => {
   // ... same as before ...
@@ -18,7 +18,7 @@ const PrivateRoute = ({ children }) => {
   return user ? children : <Navigate to="/login" />;
 };
 
-const Dashboard = () => {
+const AdminDashboard = () => {
   const { user, logout } = useAuth();
   return (
     <div className="min-h-screen bg-background-light font-display p-4 md:p-8 relative overflow-hidden">
@@ -28,7 +28,7 @@ const Dashboard = () => {
         <header className="flex justify-between items-center mb-10 bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-white shadow-xl">
           <div className="flex items-center gap-4">
             <div className="bg-primary text-white p-3 rounded-2xl shadow-lg shadow-primary/20">
-              <span className="material-symbols-outlined text-2xl">face_unlock</span>
+              <span className="material-symbols-outlined text-2xl">admin_panel_settings</span>
             </div>
             <div>
               <h1 className="text-xl font-bold text-slate-900 leading-none">EduGate Admin</h1>
@@ -87,6 +87,14 @@ const Dashboard = () => {
   );
 };
 
+const Dashboard = () => {
+  const { user } = useAuth();
+  if (user?.role === 'student') {
+    return <StudentDashboard />;
+  }
+  return <AdminDashboard />;
+};
+
 const StatsCard = ({ title, value, icon, color }) => (
   <div className="bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white transition-all hover:translate-y-[-2px] hover:shadow-xl">
     <div className="flex justify-between items-start mb-4">
@@ -104,7 +112,6 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/login-face" element={<FaceLogin />} />
           <Route path="/register-student" element={<StudentRegister />} />
           <Route path="/registration-success" element={<RegistrationSuccess />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />

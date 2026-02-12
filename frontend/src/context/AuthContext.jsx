@@ -48,20 +48,6 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const loginByFace = async (descriptor) => {
-        try {
-            const response = await api.post('/login-face', { face_descriptor: descriptor });
-            const { access_token, user } = response.data;
-
-            localStorage.setItem('token', access_token);
-            setUser(user);
-            return true;
-        } catch (error) {
-            console.error("Face Login failed", error);
-            throw error;
-        }
-    };
-
     const logout = async () => {
         try {
             await api.post('/logout');
@@ -74,7 +60,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, loginByFace, logout, isAuthenticated: !!user, isLoading }}>
+        <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, isLoading }}>
             {children}
         </AuthContext.Provider>
     );

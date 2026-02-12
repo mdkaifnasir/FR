@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -40,21 +41,48 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        $credentials = $request->validate([
+            'email' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        // 1. Try User Login (Admin/Teacher)
+        if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']])) {
+            $user = User::where('email', $credentials['email'])->firstOrFail();
+            $token = $user->createToken('auth_token')->plainTextToken;
+
             return response()->json([
-                'message' => 'Invalid login details'
-            ], 401);
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                'user' => $user,
+            ]);
         }
 
-        $user = User::where('email', $request['email'])->firstOrFail();
+        // 2. Try Student Login (using student_id or email)
+        $student = Student::where('student_id', $credentials['email'])
+            ->orWhere('email', $credentials['email'])
+            ->first();
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        if ($student && Hash::check($credentials['password'], $student->password)) {
+            $token = $student->createToken('auth_token')->plainTextToken;
+
+            // Normalize student object for frontend expectation if needed, or just return it
+            return response()->json([
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                'user' => [
+                    'id' => $student->id,
+                    'name' => $student->name,
+                    'email' => $student->email,
+                    'role' => 'student',
+                    'student_id' => $student->student_id
+                ],
+            ]);
+        }
 
         return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user,
-        ]);
+            'message' => 'Invalid ID or password'
+        ], 401);
     }
 
     public function logout(Request $request)

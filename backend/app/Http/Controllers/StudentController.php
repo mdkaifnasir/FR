@@ -26,6 +26,7 @@ class StudentController extends Controller
             'college' => 'required|string|max:255',
             'department' => 'required|string|max:255',
             'course' => 'required|string|max:255',
+            'course_id' => 'nullable|exists:courses,id',
             'semester' => 'required|string|max:50',
             'division' => 'required|string|max:50',
             'academic_year' => 'required|string|max:20',

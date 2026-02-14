@@ -12,14 +12,20 @@ class AttendanceController extends Controller
     {
         $query = Attendance::with(['student', 'course']);
 
-        if ($request->has('course_id')) {
+        if ($request->has('course_id') && $request->course_id) {
             $query->where('course_id', $request->course_id);
         }
-        if ($request->has('date')) {
+        if ($request->has('date') && $request->date) {
             $query->whereDate('detected_at', $request->date);
         }
+        if ($request->has('student_id') && $request->student_id) {
+            $query->where('student_id', $request->student_id);
+        }
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
 
-        return $query->get();
+        return $query->latest('detected_at')->get();
     }
 
     public function store(Request $request)
@@ -69,5 +75,52 @@ class AttendanceController extends Controller
         ]);
 
         return response()->json($attendance, 201);
+    }
+
+    public function stats()
+    {
+        $today = now()->toDateString();
+
+        $totalStudents = Student::count();
+        $presentToday = Attendance::whereDate('detected_at', $today)
+            ->where('status', 'present')
+            ->distinct('student_id')
+            ->count('student_id');
+
+        $lateToday = Attendance::whereDate('detected_at', $today)
+            ->where('status', 'late')
+            ->count();
+
+        $absentToday = $totalStudents - $presentToday; // Simplified logic
+
+        // Recent 5 activities
+        $recentActivity = Attendance::with('student')
+            ->latest('detected_at')
+            ->take(5)
+            ->get();
+
+        // Weekly Trend (Last 7 days)
+        $trend = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i)->toDateString();
+            $count = Attendance::whereDate('detected_at', $date)
+                ->where('status', 'present')
+                ->distinct('student_id')
+                ->count('student_id');
+            $trend[] = [
+                'date' => $date,
+                'count' => $count,
+                'day' => now()->subDays($i)->format('D')
+            ];
+        }
+
+        return response()->json([
+            'total_students' => $totalStudents,
+            'present_today' => $presentToday,
+            'absent_today' => max(0, $absentToday),
+            'late_today' => $lateToday,
+            'recent_activity' => $recentActivity,
+            'attendance_trend' => $trend
+        ]);
     }
 }

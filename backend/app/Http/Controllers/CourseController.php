@@ -9,7 +9,7 @@ class CourseController extends Controller
 {
     public function index()
     {
-        return Course::with('teacher')->get();
+        return Course::with(['teacher', 'cameras'])->get();
     }
 
     public function store(Request $request)
@@ -18,6 +18,9 @@ class CourseController extends Controller
             'name' => 'required|string',
             'code' => 'required|string|unique:courses',
             'teacher_id' => 'required|exists:users,id',
+            'department' => 'nullable|string',
+            'semester' => 'nullable|string',
+            'schedule' => 'nullable|array',
         ]);
 
         $course = Course::create($validated);
@@ -27,8 +30,28 @@ class CourseController extends Controller
 
     public function show(Course $course)
     {
-        return $course->load('teacher');
+        return $course->load(['teacher', 'cameras', 'students']);
     }
 
-    // Additional methods as needed
+    public function update(Request $request, Course $course)
+    {
+        $validated = $request->validate([
+            'name' => 'string',
+            'code' => 'string|unique:courses,code,' . $course->id,
+            'teacher_id' => 'exists:users,id',
+            'department' => 'nullable|string',
+            'semester' => 'nullable|string',
+            'schedule' => 'nullable|array',
+        ]);
+
+        $course->update($validated);
+
+        return response()->json($course);
+    }
+
+    public function destroy(Course $course)
+    {
+        $course->delete();
+        return response()->noContent();
+    }
 }

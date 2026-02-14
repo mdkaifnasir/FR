@@ -18,6 +18,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('students', \App\Http\Controllers\StudentController::class)->except(['store']);
     Route::apiResource('courses', \App\Http\Controllers\CourseController::class);
+    Route::apiResource('teachers', \App\Http\Controllers\TeacherController::class);
+    Route::apiResource('cameras', \App\Http\Controllers\CameraController::class);
     Route::apiResource('attendances', \App\Http\Controllers\AttendanceController::class);
     Route::post('/attendance/mark', [\App\Http\Controllers\AttendanceController::class, 'markPresent']);
+    Route::get('/dashboard-stats', [\App\Http\Controllers\AttendanceController::class, 'stats']);
+    Route::get('/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'index']);
 });
